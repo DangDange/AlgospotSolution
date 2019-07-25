@@ -2,6 +2,7 @@
 #include<stdio.h>
 #include<string>
 #include<vector>
+#include<map>
 #include<algorithm>
 #include<cstring>
 
@@ -1463,8 +1464,222 @@ int main() {
 }
 #endif //문제 : MeasrueTime  
 
+#if 0
+map<int, int> coords;
+
+bool isDominated(int x, int y)
+{
+	map<int, int>::iterator it = coords.lower_bound(x);
+
+	if (it == coords.end())
+		return false;
+
+	return y < it->second;
+}
+void removeDominated(int x, int y)
+{
+	map<int, int>::iterator it = coords.lower_bound(x);
+
+	if (it == coords.begin())
+		return;
+
+	--it;
+	
+	while (true)
+	{
+		if (it->second > y)
+			break;
+		
+		if (it == coords.begin())
+		{
+			coords.erase(it);
+			break;
+		}
+		else
+		{
+			map<int, int>::iterator jt = it;
+			--jt;
+			coords.erase(it);
+			it = jt;
+		}
+	}
+}
+int registered(int x, int y)
+{
+	if (isDominated(x, y))
+		return coords.size();
+
+	removeDominated(x, y);
+	coords[x] = y;
+	return coords.size();
+}
+int main() {
+
+	int testCase;
+	int inputNum;
+	int inputX, inputY;
+	int result;
+
+	scanf("%d", &testCase);
+	while (testCase--) {
+		scanf("%d", &inputNum);
+		coords.clear();
+		result = 0;
+
+		for(int i=0; i<inputNum; i++) {
+			scanf("%d %d", &inputX, &inputY);
+			result += registered(inputX, inputY);
+		}
+		printf("%d\n", result);	
+	}
+	return 0;
+}
+
+
+#endif //문제 : Nerd2  
+
 #if 1
 
+struct Node {
 
+	int key;
+	int priroity,subTreeSize;
+	Node* left;
+	Node* right;
 
+	Node(const int& _key): key(_key), priroity(rand()), subTreeSize(1)
+	{
+		left = right = NULL;
+	}
+	void setLeft(Node* leftNode){
+		left = leftNode;
+		calcSize();
+	}
+	void setRight(Node* rightNode) {
+		right = rightNode;
+		calcSize();
+	}
+	void calcSize() {
+		subTreeSize = 1;
+		if (right != NULL) subTreeSize += right->subTreeSize;
+		if (left != NULL) subTreeSize += left->subTreeSize;
+	}
+};
+typedef pair<Node*, Node*> NodePair;
+
+NodePair split(Node* root, int key) {
+	if (root == NULL) return NodePair(NULL, NULL);
+
+	if (root->key < key) {
+		NodePair rs = split(root->right, key);
+		root->setRight(rs.first);
+		return NodePair(root, rs.second);
+	}
+	else {
+		NodePair ls = split(root->left, key);
+		root->setLeft(ls.second);
+		return NodePair(ls.first, root);
+	}
+}
+Node* insert(Node* root, Node* node) {
+	if (root == NULL) return node;
+
+	if (root->priroity < node->priroity) {
+		NodePair splited = split(root, node->key);
+		node->setLeft(splited.first);
+		node->setRight(splited.second);
+		return node;
+	}
+	else if (root->key > node->key) {
+		root->setLeft(insert(root->left, node));
+	}
+	else {
+		root->setRight(insert(root->right, node));
+	}
+	return root;
+}
+
+Node* merge(Node* left, Node* right) {
+	if (left == NULL) return right;
+	if (right == NULL) return left;
+
+	if (left->priroity < right->priroity) {
+		right->setLeft(merge(left, right->left));
+		return right;
+	}
+	else {
+		left->setRight(merge(left->right, right));
+		return left;
+	}
+}
+Node* erase(Node* root, int key) {
+	if (root == NULL) return root;
+
+	if (root->key == key) {
+		Node* ret = merge(root->left, root->right);
+		delete root;
+		return ret;
+	}
+	else {
+		if (root->key < key) {
+			root->setRight(erase(root->right, key));
+		}
+		else {
+			root->setLeft(erase(root->left, key));
+		}
+	}
+	return root;
+}
+Node* kth(Node* root, int _kth) {
+
+	if (root == NULL) return NULL;
+
+	int leftSize = 0;
+	if (root->left != NULL) leftSize = root->left->subTreeSize;
+	if (_kth <= leftSize)
+		return kth(root->left, _kth);
+	else if (_kth == leftSize + 1)
+		return root;
+	else
+		return kth(root->right, _kth - leftSize - 1);
+}
+int countLessThan(Node* root, int key) {
+	if (root == NULL) return 0;
+
+	int count = 0;
+	if (root->key >= key) {
+		return countLessThan(root->left, key);
+	}
+	count += root->left ? root->left->subTreeSize : 0;
+	return count + countLessThan(root->right, key) + 1;
+}
+
+int main() {
+
+	int testCase, input, num;
+	int shifted[50001], result[50001];
+
+	scanf("%d", &testCase);
+	while (testCase--) {
+		scanf("%d", &num);
+		for(int i=0; i<num; i++){
+			cin >> input;
+			shifted[i] = input;
+		}
+		Node* root = NULL;
+		for (int i = 0; i < num; i++) {
+			root = insert(root, new Node(i + 1));
+		}
+		for (int i = num - 1; i >= 0; i--) {
+			int shitValue = shifted[i];
+			Node* value = kth(root, i + 1 - shitValue);
+			result[i] = value->key;
+			root = erase(root, value->key);
+		}
+		for (int i = 0; i < num; i++) {
+			printf("%d ", result[i]);
+		}
+	}
+
+}
 #endif
