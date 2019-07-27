@@ -1538,7 +1538,7 @@ int main() {
 
 #endif //巩力 : Nerd2  
 
-#if 1
+#if 0
 
 struct Node {
 
@@ -1683,4 +1683,238 @@ int main() {
 
 }
 #endif //巩力 : Insertion
+
+#if 0
+int testCase, N, M;
+
+struct unionFindByRank {
+
+	vector<int> parent;
+	vector<int> rank;
+	vector<int> size;
+	vector<int> enemy;
+
+	unionFindByRank(int size):parent(size), rank(size,1), size(size,1), enemy(size, -1) {
+		for (int i = 0; i < size; i++) {
+			parent[i] = i;
+		}
+	}
+	int find(int u) {
+		if (parent[u] == u) 
+			return u;
+		else 
+			return parent[u] = find(parent[u]);
+	}
+	int merge(int u, int v) {
+		if (u == -1 || v == -1)return max(u, v);
+
+		u = find(u);
+		v = find(v);
+
+;		if (u == v) return u;
+		
+		if (rank[u] > rank[v]) swap(u, v);
+		if (rank[u] == rank[v]) rank[v]++;
+
+		parent[u] = v;
+		size[v] += size[u];
+
+		return v;
+	}
+	bool ack(int u, int v) {
+		u = find(u);
+		v = find(v);
+
+		if (enemy[u] == v) return false;
+
+		int a = merge(u, v);
+		int b = merge(enemy[u], enemy[v]);
+		enemy[a] = b; 
+		if (b != -1) 
+			enemy[b] = a;
+
+		return true;
+	}
+	bool dis(int u, int v) {
+		u = find(u);
+		v = find(v);
+
+		if (u == v) return false;
+
+		int a = merge(enemy[u], v);
+		int b = merge(u, enemy[v]);
+		enemy[a] = b;
+		enemy[b] = a;
+
+		return true;
+	}
+};
+
+int findMaxSizePart(unionFindByRank& zip) {
+
+	int ret = 0;
+	for (int node = 0; node < N; node++) {
+		if (zip.parent[node] == node) {
+			int enemy = zip.enemy[node];
+
+			if (enemy > node) continue;
+			int myBufSize = zip.size[node];
+			int enemyBufsize = (enemy != -1 ? zip.size[enemy] : 0);
+			ret += max(myBufSize, enemyBufsize);
+		}
+	}
+	return ret;
+}
+int main() {
+
+	string s;
+	int a, b, i,contNum;
+	bool result;
+	int maxSize;
+
+	scanf("%d", &testCase);
+	while (testCase--) {
+		scanf("%d %d", &N, &M);
+		unionFindByRank *zip = new unionFindByRank(N);
+		result = true;
+
+		for (i = 0; i < M; i++) {
+			cin >> s >> a >> b;
+
+			if (!result) continue;
+
+			if (s == "ACK") {
+				if (!zip->ack(a, b)) {
+					result = false;
+					contNum = i + 1;
+				}
+			}
+			else {
+				if (!zip->dis(a, b)) {
+					result = false;
+					contNum = i + 1;
+				}
+			}
+		}
+
+		if (result == false) {
+			printf("CONTRADICTION AT %d\n", contNum);
+		}
+		else {
+			maxSize = findMaxSizePart(*zip);
+			printf("MAX PARTY SIZE IS %d\n", maxSize);
+		}
+		delete zip;
+	}
+	return 0;
+}
+#endif //巩力 : EDITORWARS 
+
+#if 0
+int nodeCount = 0;
+int toNumber(char value) {
+	return value - 'A';
+}
+
+struct trieNode {
+	trieNode* alphabet[26];
+	int first;
+	int terminal;
+	trieNode(): terminal(-1), first(-1) {
+		for (int i = 0; i < 26; i++)
+			alphabet[i] = NULL;
+	}	
+};
+trieNode trieNodePool[10000];
+
+trieNode* getTrieNode() {
+
+	for (int i = 0; i < 26; i++) {
+		trieNodePool[nodeCount].alphabet[i] = NULL;
+		trieNodePool[nodeCount].first = -1;
+		trieNodePool[nodeCount].terminal = -1;
+	}
+	return &trieNodePool[nodeCount++];
+}
+void insert(trieNode* root, const char* key, int id) {
+	if (root->first == -1)
+		root->first = id;
+
+	if (*key == 0) {
+		root->terminal = id;
+	}
+	else {
+		int next = toNumber(*key);
+		if(root->alphabet[next] == NULL)
+			root->alphabet[next] = getTrieNode();
+		insert(root->alphabet[next], key + 1, id);
+	}
+}
+trieNode* find(trieNode* root, char* key) {
+	if (*key == 0) return root;
+	else {
+		int next = toNumber(*key);  
+		if (root->alphabet[next] == NULL) return NULL;
+		return find(root->alphabet[next], key + 1);
+	}	
+}
+
+trieNode* makeTrie(int words) {
+	vector<pair<int, string>> input;
+
+	for (int i = 0; i < words; i++) {
+		int freq;
+		char buf[11];
+		scanf("%s %d", buf, &freq);
+		input.push_back(make_pair(-freq, buf));
+	}
+	sort(input.begin(), input.end());
+	
+	trieNode* root = new trieNode;
+	for (int i = 0; i < words; i++) {
+		insert(root, input[i].second.c_str(), i);
+	}
+	root->first = -1;
+	return root;
+}
+int type(trieNode* root, int id, char* key) {
+	int ret = 0;
+
+	if (*key == 0) return 0;
+	if (root->first == id) return 1;
+	else {
+		int next = toNumber(*key);
+		ret += type(root->alphabet[next], id, key + 1);
+	}
+	return ret + 1;
+}
+int countType(trieNode* root, char* input) {
+
+	trieNode* findNode = find(root, input);
+
+	if (findNode == NULL || findNode->terminal == -1)
+		return strlen(input);
+
+	return type(root, findNode->terminal, input);
+}
+int main() {
+	int testCase;
+	int a, b, result;
+	char buf[11];
+
+	scanf("%d", &testCase);
+	while (testCase--) {
+		scanf("%d %d", &a, &b);
+		trieNode* root = makeTrie(a);
+
+		result = 0;
+		for (int j = 0; j < b; j++) {
+			scanf("%s", buf);
+			result += countType(root, buf);
+		}
+		printf("%d\n", result + b - 1);
+	}
+
+}
+#endif //巩力 : SOLONG
 
