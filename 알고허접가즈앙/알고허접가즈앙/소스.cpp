@@ -5,6 +5,8 @@
 #include<map>
 #include<algorithm>
 #include<cstring>
+#include<stack>
+#include<queue>
 
 using namespace std;
 
@@ -1027,7 +1029,7 @@ int main() {
 	}
 	return 0;
 }
-#endif //문제 : TreeTraversal
+#endif //문제(Tree) : TreeTraversal
 
 #if 0 //Forest
 /*
@@ -1141,7 +1143,7 @@ int main() {
 	}
 	return 0;
 }
-#endif //문제 : FORTRESS
+#endif //문제(Tree) : FORTRESS
 
 #if 0
 /*
@@ -1206,7 +1208,7 @@ int main() {
 	}
 	return 0;
 }
-#endif //문제 : RUNNINGMEDIAN
+#endif //문제(PriorityQueue) : RUNNINGMEDIAN
 
 #if 0 
 /*
@@ -1271,7 +1273,7 @@ int main() {
 
 }
 
-#endif //문제 : MORDOR
+#endif //문제(SegmentTree) : MORDOR
 
 #if 0
 #define MAX_NODE 100000
@@ -1379,7 +1381,7 @@ int main() {
 	}
 }
 
-#endif //문제 : FAMILYTREE
+#endif //문제(SegmentTree) : FAMILYTREE
 
 #if 0
 struct FenwickTree {
@@ -1462,7 +1464,7 @@ int main() {
 
 	return 0;
 }
-#endif //문제 : MeasrueTime  
+#endif //문제(FenwickTree) : MeasrueTime  
 
 #if 0
 map<int, int> coords;
@@ -1536,7 +1538,7 @@ int main() {
 }
 
 
-#endif //문제 : Nerd2  
+#endif //문제(BinaryTree) : Nerd2  
 
 #if 0
 
@@ -1682,7 +1684,7 @@ int main() {
 	}
 
 }
-#endif //문제 : Insertion
+#endif //문제(BinaryTree) : Insertion
 
 #if 0
 int testCase, N, M;
@@ -1808,7 +1810,7 @@ int main() {
 	}
 	return 0;
 }
-#endif //문제 : EDITORWARS 
+#endif //문제(UnionFind) : EDITORWARS 
 
 #if 0
 int nodeCount = 0;
@@ -1916,5 +1918,1131 @@ int main() {
 	}
 
 }
-#endif //문제 : SOLONG
+#endif //문제(Trie) : SOLONG
 
+#if 0
+
+vector<vector<int>> adj;
+void makeGraph(const vector<string>& words) {
+	adj = vector<vector<int>>(26, vector<int>(26, 0));
+	int i,len;
+
+	for (int j = 1; j < words.size(); j++) {
+		i = j - 1;
+		len = min(words[i].size(), words[j].size());
+
+		for (int k = 0; k < len; k++) {
+			if (words[i][k] != words[j][k]) {
+				int a = words[i][k] - 'a';
+				int b = words[j][k] - 'a';
+				adj[a][b] = 1;
+				break;
+			}
+		}
+	}
+}
+
+vector<int> order, visit;
+void dfs(int here) {
+	visit[here] = 1;
+
+	for (int there = 0; there < adj.size(); there++) {
+		if (adj[here][there] && !visit[there]) {
+			dfs(there);
+		}
+	}
+	order.push_back(here);
+}
+vector<int> tplSort() {
+	int num = adj.size();
+	visit = vector<int>(num, 0);
+	order.clear();
+	
+	for (int i = 0; i < num; i++) {
+		if (visit[i] == 0) {
+			dfs(i);
+		}
+	}
+	reverse(order.begin(), order.end());
+	for (int i = 0; i < order.size(); i++) {
+		for (int j = i + 1; j < order.size(); j++) {
+			if (adj[order[j]][order[i]] == 1)
+				return vector<int>();
+		}
+	}
+	return order;
+}
+int main() {
+
+	int testCase;
+	int numOfWords;
+	string input;
+	vector<string> inputWords;
+	vector<int> result;
+
+	scanf("%d", &testCase);
+	while (testCase--) {
+		inputWords.clear();
+		scanf("%d", &numOfWords);
+		while (numOfWords--) {
+			cin >> input;
+			inputWords.push_back(input);
+		}
+		makeGraph(inputWords);
+		result = tplSort();
+		if (result.size() == 0) {
+			printf("INVALID HYPOTHESIS\n");
+		}
+		else {
+			for (int i = 0; i < result.size(); i++) {
+				printf("%c", result[i]+'a');
+			}
+			printf("\n");
+		}
+	}
+}
+#endif //문제(DFS : TopologicalSort) : Dictionary
+
+#if 0
+
+vector<vector<int>> adj;
+vector<string> graph[26][26];
+vector<int> outDegree;
+vector<int> inDegree;
+void makeGraph(const vector<string>& words) 
+{
+	int i, j;
+	for (i = 0; i < 26; i++) {
+		for (j = 0; j < 26; j++) {
+			graph[i][j].clear();
+		}
+	}
+	adj = vector<vector<int>>(26, vector<int>(26, 0));
+	outDegree = inDegree = vector<int>(26, 0);
+
+	for (i = 0; i < words.size(); i++) {
+		int a = words[i][0] - 'a';
+		int b = words[i][words[i].size() - 1] - 'a';
+
+		adj[a][b]++;
+		graph[a][b].push_back(words[i]);
+		outDegree[a]++;
+		inDegree[b]++;
+	}
+}
+void getEulerCircuit(int here, vector<int>& circuit) {
+	
+	for (int there = 0; there < adj.size(); there++) {
+		while (adj[here][there] > 0) {
+			adj[here][there]--;
+			getEulerCircuit(there, circuit);
+		}
+	}
+	circuit.push_back(here);
+}
+vector<int> getEulerTrailOrCircuit() 
+{
+	vector<int> returnCircuit;
+	int i;
+
+	for (int i = 0; i < 26; i++) {
+		if (outDegree[i] == inDegree[i] + 1) {
+			getEulerCircuit(i, returnCircuit);
+			return returnCircuit;
+		}
+	}
+	for (int i = 0; i < 26; i++) {
+		if (outDegree[i]) {
+			getEulerCircuit(i, returnCircuit);
+			return returnCircuit;
+		}
+	}
+	return returnCircuit;
+}
+bool checkEuler() {
+
+	int minus = 0;
+	int plus = 0;
+
+	for (int i = 0; i < 26; i++) {
+		int delta = outDegree[i] - inDegree[i];
+
+		if (delta < -1 || delta > 1) return false;
+		if (delta == 1) plus++;
+		if (delta == -1) minus++;
+	}
+	return (plus == 1 && minus == 1) || (plus == 0 && minus == 0);
+}
+string solve(const vector<string>& words) {
+	makeGraph(words);
+
+	if (!checkEuler()) return "IMPOSSIBLE";
+
+	vector<int> circuit = getEulerTrailOrCircuit();
+
+	if (circuit.size() != words.size()+1) return "IMPOSSIBLE";
+
+	reverse(circuit.begin(), circuit.end());
+	string ret;
+	for (int i = 1; i < circuit.size(); i++) {
+		int a = circuit[i - 1];
+		int b = circuit[i];
+		if (ret.size()) ret += " ";
+		ret += graph[a][b].back();
+		graph[a][b].pop_back();
+	}
+	return ret;
+}
+int main() {
+	int testCase;
+	int numOfWord;
+	string input;
+	vector<string> words;
+
+	scanf("%d", &testCase);
+	while (testCase--) 
+	{
+		words.clear();
+		scanf("%d", &numOfWord);
+		while (numOfWord--) 
+		{
+			cin >> input;
+			words.push_back(input);
+		}
+		string ret = solve(words);
+		cout << ret << endl;
+	}
+	return 0;
+}
+
+
+#endif //문제(DFS : EulerCircuit/Trail) : WordChain
+
+#if 0
+
+#define MAX_V 1001
+
+const int UNWATCHED = 0;
+const int WATCHED = 1;
+const int INSTALLED = 2;
+
+int installed;
+vector<int> adj[MAX_V];
+bool visited[MAX_V];
+
+int dfs(int here){
+	
+	visited[here] = true;
+	int children[3] = { 0,0,0 };
+
+	for (int i = 0; i < adj[here].size(); i++) {
+		int there = adj[here][i];
+		if (visited[there] == false) {
+			children[dfs(there)]++;
+		}
+	}
+	if (children[0]) {
+		installed++;
+		return INSTALLED;
+	}
+	if (children[2]) {
+		return WATCHED;
+	}
+	return UNWATCHED;
+}
+int install(int v) {
+	installed = 0;
+
+	for (int i = 0; i < v; i++) {
+		if (!visited[i] && dfs(i) == UNWATCHED) {
+			++installed;
+		}
+	}
+	return installed;
+}
+int main() {
+
+	int testCase;
+	int g, h, s, e;
+	scanf("%d", &testCase);
+	while (testCase--) {
+		scanf("%d %d", &g, &h);
+		for (int i = 0; i < g; i++) {
+			visited[i] = false;
+			adj[i].clear();
+		}
+
+		for (int i = 0; i < h; i++) {
+			scanf("%d %d", &s, &e);
+			adj[s].push_back(e);
+			adj[e].push_back(s);
+		}
+
+		int result = install(g);
+		cout << result << endl;
+	}
+	return 0;
+}
+#endif //문제:(DFS:CCTV?)
+
+#if 0
+vector<vector<int>> adj;
+vector<int> discovered;
+vector<int> SccId;
+stack<int> st;
+int counter,SccIdCounter;
+int findEdge(int here) {
+
+	int ret;
+
+	ret = discovered[here] = counter++;
+
+	st.push(here);
+	for (int i = 0; i < adj[here].size(); i++) {
+		int there = adj[here][i];
+		
+		if (discovered[there] == -1) {
+			ret = min(ret, findEdge(there));
+		}
+		else if (SccId[there] == -1) {
+			ret = min(ret, discovered[there]);
+		}
+	}
+	if (ret == discovered[here]) {
+		while (1) {
+			int value = st.top();
+			st.pop();
+			SccId[value] = SccIdCounter;
+			if (value == here) break;
+		}
+		SccIdCounter++;
+	}
+	return ret;
+}
+#endif //강결합 컴포넌트분리 알고림즘
+
+#if 0
+
+vector<vector<int>> adj;
+
+bool disjoint(pair<int,int> a, pair<int,int> b) {
+	return a.second <= b.first || b.second <= a.first;
+}
+void makeGraph(const vector<pair<int, int>>& meetings) {
+	int size = meetings.size();
+
+	adj.clear();
+	adj.resize(size * 2);
+	for (int i = 0; i < size; i+=2) {
+		int j = i + 1;
+		adj[i * 2 + 1].push_back(j * 2); //~i->j
+		adj[j * 2 + 1].push_back(i * 2); //~j->i
+		//(A0 || A1)을 만족하기위한 식
+	}
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < i; j++) {
+			if (!disjoint(meetings[i], meetings[j])) {
+				adj[i * 2].push_back(j * 2 + 1); //i->~j
+				adj[j * 2].push_back(i * 2 + 1 );//j->~i
+			}
+		}
+	}
+}
+vector<int> sccID;
+vector<int> discovered;
+stack<int> st;
+int sccIdCounter, discoveredCounter;
+
+int scc(int here) {
+
+	int ret;
+
+	ret = discovered[here] = discoveredCounter++;
+	st.push(here);
+	for (int i = 0; i < adj[here].size(); i++) {
+		int there = adj[here][i];
+
+		if (discovered[there] == -1) {
+			ret = min(ret, scc(there));
+		}
+		else if (sccID[there] == -1) {
+			ret = min(ret, discovered[there]);
+		}
+	}
+	if (ret == discovered[here]) {
+		while (1) {
+			int value = st.top();
+			st.pop();
+			sccID[value] = sccIdCounter;
+			if (value == here) break;
+		}
+		sccIdCounter++;
+	}
+	return ret;
+}
+vector<int> tarjanSCC() {
+	
+	sccID = discovered = vector<int>(adj.size(), -1);
+	sccIdCounter = discoveredCounter = 0;
+
+	for (int i = 0; i < adj.size(); i++) {
+		if (discovered[i] == -1) scc(i);
+	}
+	return sccID;
+}
+vector<int> solve2SAT() {
+
+	int n = adj.size() / 2;
+	
+	vector<int> label = tarjanSCC();
+
+	for (int i = 0; i < n * 2; i+=2) {
+		if (label[i] == label[i + 1])
+			return vector<int>();
+	}
+	vector<int> value(n * 2, -1);
+	vector<pair<int, int>> order;
+
+	for (int i = 0; i < 2 * n; i++) {
+		order.push_back(make_pair(-label[i],i));
+	}
+	sort(order.begin(), order.end());
+	for (int i = 0; i < n * 2; i++) {
+		int vertex = order[i].second;
+		int variable = vertex / 2;
+		int isTrue = vertex % 2;
+
+		if (value[variable] != -1)continue;
+		value[variable] = !isTrue;
+	}
+	return value;
+}
+int main() {
+
+	int testCase, num,start1, end1, start2, end2;
+	vector<pair<int, int>> meeting;
+
+	scanf("%d", &testCase);
+	while (testCase--) {
+		scanf("%d", &num);
+		meeting.clear();
+		for (int i = 0; i < num; i++) {
+			cin >> start1 >> end1 >> start2 >> end2;
+			meeting.push_back(make_pair(start1, end1));
+			meeting.push_back(make_pair(start2, end2));
+		}
+		makeGraph(meeting);
+		vector<int> ret = solve2SAT();
+		if (ret.size() == 0) {
+			cout << "IMPOSSIBLE" << endl;
+		}
+		else {
+			cout << "POSSIBLE" << endl;
+			for (int i = 0; i < num*2; i+=2) {
+				if (ret[i] == 0) {
+					printf("%d %d\n", meeting[i].first, meeting[i].second);
+				}
+				else {
+					printf("%d %d\n", meeting[i+1].first, meeting[i+1].second);
+				}
+			}
+		}
+	}
+}
+#endif //Meetings
+
+#if 0
+map<vector<int>, int> toSort;
+
+void preCalc(int n) {
+	
+	vector<int> perm(n);
+	for (int i = 0; i < n; ++i) 
+		perm[i] = i;
+
+	queue<vector<int>> qu;
+	toSort[perm] = 0;
+	qu.push(perm);
+
+	while (!qu.empty()) {
+		vector<int> here = qu.front();
+		qu.pop();
+
+		int cost = toSort[here];
+		for (int i = 0; i < n; i++) {
+			for (int j = i + 2; j <= n; j++) {
+				reverse(here.begin() + i, here.begin() + j);
+				if (toSort.count(here) == 0) {
+					toSort[here] = cost + 1;
+					qu.push(here);
+				}
+				reverse(here.begin() + i, here.begin() + j);
+			}
+		}
+	}
+}
+int solve(const vector<int>& input) {
+	
+	int n = input.size();
+	int leftNum = 8 - n;
+	vector<int> fixed(8);
+	vector<bool> used(8, false);
+
+	for (int i = 0; i < n; i++) {
+		int smaller = 0;
+		for (int j = 0; j < n; j++) {
+			if (input[j] < input[i]) {
+				++smaller;
+			}
+		}
+		fixed[i] = smaller;
+		used[smaller] = true;
+	}
+	for (int i = 0; i < 8; i++) {
+		if (used[i] == false) {
+			fixed[n++] = i;
+		}
+	}
+	return toSort[fixed];
+}
+int main() {
+
+	int testCase, num;
+	
+	scanf("%d", &testCase);
+	toSort.clear();
+	preCalc(8);
+	while (testCase--) {
+		scanf("%d", &num);
+		vector<int> inputArray(num, 0);
+		for (int i = 0; i < num; i++) {
+			cin >> inputArray[i];
+		}
+		int ret = solve(inputArray);
+		printf("%d\n", ret);
+	}
+	return 0;
+}
+#endif //Sorting Game
+
+#if 0
+
+int append(int here, int edge, int mod) {
+	int there = here * 10 + edge;
+
+	if (there >= mod) return mod + there % mod;
+	return there % mod;
+}
+string gifts(string digits, int n, int m) {
+
+	sort(digits.begin(), digits.end());
+	vector<int> parent(2 * n, -1), choice(2 * n, -1);
+	queue<int> q;
+
+	parent[0] = 0;
+	q.push(0);
+	while (!q.empty()) {
+		int here = q.front();
+		q.pop();
+
+		for (int i = 0; i < digits.size(); i++) {
+			int there = append(here, digits[i] - '0', n);
+			if (parent[there] == -1) {
+				parent[there] = here;
+				choice[there] = digits[i];
+				q.push(there);
+			}
+		}
+	}
+	if (parent[n + m] == -1) return "IMPOSSIBLE";
+
+	string ret;
+	int here = n + m;
+	while (parent[here] != here) {
+		ret += char(choice[here]);
+		here = parent[here];
+	}
+	reverse(ret.begin(), ret.end());
+	return ret;
+}
+int main() {
+
+	int testCase;
+	int m, n;
+	string digits;
+	scanf("%d", &testCase);
+	while (testCase--) {
+		cin >> digits;
+		scanf("%d %d", &n, &m);
+
+		string result = gifts(digits, n, m);
+		cout << result << endl;
+	}
+	return 0;
+}
+#endif //Children Day
+
+#if 0
+
+#define MAX_DISCS 12
+
+int c[1 << (MAX_DISCS * 2)];
+
+int get(int state, int index) {
+	return (state >> (index * 2)) & 3;
+}
+int set(int state, int index, int value) {
+	return (state & ~(3 << (index * 2))) | (value << (index * 2));
+}
+/*
+int bfs(int discs, int begin, int end) {
+
+	if (begin == end) return 0;
+	queue<int> q;
+	memset(c, -1, sizeof(c));
+	q.push(begin);
+	c[begin] = 0;
+	
+	while (!q.empty()) {
+		int here = q.front();
+		q.pop();
+
+		int top[4] = { -1,-1,-1,-1 };
+		for (int i = discs - 1; discs >= 0; i--) {
+			top[get(here, i)] = i;
+		}
+
+		for (int i = 0; i < 4; i++) {
+			if (top[i] != -1) {
+				for (int j = 0; j < 4; j++) {
+					if (i != j && (top[j]==-1 || top[j] > top[i])) {
+						int there = set(here, top[i], j);
+						if (c[there] != -1) continue;
+						c[there] = c[here] + 1;
+						if (there == end) return c[there];
+						q.push(there);
+					}
+				}
+			}
+		}
+	}
+	return -1;
+}*/ //일반 BFS
+//일반 BFS
+int sgn(int x) { 
+	if (!x) return 0; 
+	return x > 0 ? 1 : -1; 
+}
+int incr(int x) { 
+	if (x < 0) return x - 1; 
+	return x + 1; 
+}
+int biDirectionSearch(int discs, int begin, int end) {
+	
+	if (begin == end) return 0;
+	
+	queue<int> qu;
+	memset(c, 0, sizeof(c));
+	c[begin] = 1 , c[end] = -1;
+	
+	qu.push(begin);
+	qu.push(end);
+
+	while (!qu.empty()) {
+		int here = qu.front();
+		qu.pop();
+
+		int top[4] = { -1,-1,-1,-1 };
+		for (int i = discs - 1; i >= 0; --i) {
+			top[get(here, i)] = i;
+		}
+		for (int i = 0; i < 4; i++) {
+			if (top[i] != -1) {
+				for (int j = 0; j < 4; j++) {
+					if (i != j && (top[j] == -1 || top[j] > top[i])) {
+						int there = set(here, top[i], j);
+						if (c[there] == 0) {
+							c[there] = incr(c[here]);
+							qu.push(there);
+						}
+						else if(sgn(c[here]) != sgn(c[there])){
+							return abs(c[here]) + abs(c[there]) - 1;
+						} 
+					}
+				}
+			}
+		}
+	}
+	return -1;
+}
+int main() {
+
+	int testCase, N;
+	
+	scanf("%d", &testCase);
+	
+	while (testCase--) {
+		cin >> N;
+		int num, n;
+		int first = 0;
+		int end = pow(2, 2 * N) - 1;
+		for (int i = 0; i < 4; i++) {
+			cin >> num;
+			for (int j = 0; j < num; j++) {
+				cin >> n;
+				first = set(first, n - 1, i);
+			}
+		}
+		//cout << bfs(total, first, end) << endl;
+		cout << biDirectionSearch(N, first, end) << endl;
+	}
+	return 0;
+}
+#endif //Hanoi  
+
+#if 0
+
+const double INIT_VALUE = DBL_MAX;
+
+vector<pair<double, int>> adj[20001];
+double minDist[10001];
+bool visit[10001];
+
+void initialize(int n) {
+	for (int i = 0; i < n; i++) {
+		minDist[i] = INIT_VALUE;
+		adj[i].clear();
+		visit[i] = false;
+	}
+}
+void dijkstra() {
+
+	priority_queue<pair<double, int>> pq;
+	minDist[0] = 1;
+
+	pq.push(make_pair(-1,0));
+	while (!pq.empty()) {
+		double weight = pq.top().first * -1;
+		int here = pq.top().second;
+		pq.pop();
+
+		if (visit[here] == true) continue;
+		
+		visit[here] = true;
+		for (int i = 0; i < adj[here].size(); i++) {
+			int there = adj[here][i].second;
+			double nextDist = weight * adj[here][i].first;
+			
+			if (minDist[there] > nextDist) {
+				minDist[there] = nextDist;
+				pq.push(make_pair(-nextDist, there));
+			}
+		}
+	}
+}
+int main() {
+
+	int testCase;
+
+	scanf("%d", &testCase);
+	while (testCase--) {
+		int N,M;
+		int a, b;
+		double c;
+		
+		cin >> N >> M;
+
+		initialize(N);
+		while (M--) {
+			scanf("%d %d %lf", &a, &b, &c); 
+			adj[a].push_back(make_pair(c, b));
+			adj[b].push_back(make_pair(c, a));
+		}
+		dijkstra();
+		cout.precision(10);
+		cout << minDist[N - 1] << endl;
+
+	}
+	return 0;
+}
+
+
+
+#endif
+
+#if 0
+
+#define MAX_VALUE  DBL_MAX
+
+
+int main() {
+
+	int testCase;
+	int v, e, n, m, a, b, t;
+	int temp, total;
+	vector<vector<pair<int, int>>> adj;
+	priority_queue<pair<int, int>> qu;
+	vector<int> fireSpot;
+	vector<int> dist;
+	
+	scanf("%d", &testCase);
+	while (testCase--) {
+		cin >> v >> e >> n >> m;
+
+		adj = vector<vector<pair<int, int>>>(v + 1);
+		dist = vector<int>(v + 1, 1e9);
+		fireSpot.clear();
+
+		for (int i = 0; i < e; i++) {
+			cin >> a >> b >> t;
+			adj[a].push_back(make_pair(b,t));
+			adj[b].push_back(make_pair(a, t));
+		}
+		for (int i = 0; i < n; i++) {
+			cin >> temp;
+			fireSpot.push_back(temp);
+		}
+		for (int i = 0; i < m; i++) {
+			cin >> temp;
+			qu.push(make_pair(0, temp));
+			dist[temp] = 0;
+		}
+		
+		while (!qu.empty()) {
+			int here = qu.top().second; 
+			int curWeight = -qu.top().first;
+			qu.pop();
+
+			if (dist[here] < curWeight) continue;
+
+			for (int i = 0; i < adj[here].size(); i++) {
+				int there = adj[here][i].first;
+				int weight = adj[here][i].second + curWeight;
+
+				if (weight < dist[there]) {
+					dist[there] = weight;
+					qu.push(make_pair(-weight, there));
+				}
+			}
+		}
+		total = 0;
+		for (int i = 0; i < n; i++) {
+			total += dist[fireSpot[i]];
+		}
+		cout << total << endl;
+	}
+}
+
+
+#endif //FIRETRUCKS     
+
+#if 0
+
+const int INF = 1e9;
+const int START = 0;
+
+vector<int> A;
+vector<int> B;
+vector<pair<int, int>> adj[402];
+
+vector<int> dijkstra(int src) {
+	vector<int> dist(402, INF);
+	dist[src] = 0;
+	priority_queue<pair<int, int>> pq;
+	pq.push(make_pair(0, src));
+	while (!pq.empty()) {
+		int cost = -pq.top().first;
+		int here = pq.top().second;
+		pq.pop();
+
+		if (dist[here] < cost) continue;
+		for (int i = 0; i < adj[here].size(); i++) {
+			int there = adj[here][i].first;
+			int nextDist = adj[here][i].second + cost;
+			if (dist[there] > nextDist) {
+				dist[there] = nextDist;
+				pq.push(make_pair(-nextDist, there));
+			}
+		}
+	}
+	return dist;
+}
+int vertex(int value) {
+	return value + 200;
+}
+int makeGraph() {
+
+	for (int i = 0; i < 402; i++) {
+		adj[i].clear();
+	}
+	for (int i = 0; i < A.size(); i++) {
+		int delta = A[i] - B[i];
+		adj[START].push_back(make_pair(vertex(delta),A[i]));
+	}
+	for (int delta = -199; delta <= 199; delta++) {
+		for (int i = 0; i < A.size(); i++) {
+			int next = delta + A[i] - B[i];
+
+			if (abs(next) > 200) continue;
+			adj[vertex(delta)].push_back(make_pair(vertex(next), A[i]));
+		}
+	}
+	vector<int> shortest = dijkstra(START);
+	int ret = shortest[vertex(0)];
+	if (ret == INF) return -1;
+	return ret;
+}
+int main() {
+
+	int testCase;
+	int M, a, b;
+
+	scanf("%d", &testCase);
+	while (testCase--) {
+		scanf("%d", &M);
+		A.clear();
+		B.clear();
+		for (int i = 0; i < M; i++) {
+			scanf("%d %d", &a, &b);
+			A.push_back(a);
+			B.push_back(b);
+		}
+		int result = makeGraph();
+		if (result != -1)
+			cout << result << endl;
+		else
+			cout << "IMPOSSIBLE" << endl;
+	}
+	return 0;
+}
+
+
+#endif //NTHLON
+
+#if 0
+
+int v, w, a, b, d;
+bool reachable[101][101];
+
+int bellmanFord(vector<pair<int,int>> adj[101] ,int src, int target) {
+
+	vector<int> upper(v, 1e9);
+	upper[src] = 0;
+
+	for (int dist = 0; dist < v-1; dist++) {
+		for (int here = 0; here < v; here++) {
+			for (int edge = 0; edge < adj[here].size(); edge++) {
+				int there = adj[here][edge].first;
+				int cost = adj[here][edge].second;
+
+				upper[there] = min(upper[there], upper[here] + cost);
+			}
+		}
+	}
+
+	for (int here = 0; here < v; here++) {
+		for (int edge = 0; edge < adj[here].size(); edge++) {
+			int there = adj[here][edge].first;
+			int cost = adj[here][edge].second;
+
+			if (upper[there] > upper[here] + cost) {
+				if (reachable[src][here] == 1 && reachable[there][target] == 1) {
+					return	-1e9;
+				}
+			}
+		}
+	}
+	return upper[target];
+}
+
+int main() {
+
+	int testCase;
+	vector<pair<int, int>> adj[101];
+	vector<pair<int, int>> inverseAdj[101];
+
+	scanf("%d", &testCase);
+	while (testCase--) {
+		scanf("%d %d", &v, &w);
+		for (int i = 0; i < v; i++) {
+			adj[i].clear();
+			inverseAdj[i].clear();
+		}
+		for (int i = 0; i < v; i++) {
+			for (int j = 0; j < v; j++) {
+				reachable[i][j] = 0;
+			}
+		}
+
+		for (int i = 0; i < w; i++) {
+			scanf("%d %d %d", &a, &b, &d);
+			adj[a].push_back(make_pair(b,d));
+			inverseAdj[a].push_back(make_pair(b, -d));
+			reachable[a][b] = 1; //오답의원인 : 단순히 이것만 추가했음, i - k -> j 를 거쳐서 i,j도 도달 가능인데 이것을 생각못함
+		}
+		for (int k = 0; k < v; k++) {
+			for (int i = 0; i < v; i++) {
+				for (int j = 0; j < v; j++) {
+					reachable[i][j] = reachable[i][j] || (reachable[i][k] && reachable[k][j]);
+				}
+			}
+		}
+		int minResult = bellmanFord(adj ,0, 1);
+		int maxResult = bellmanFord(inverseAdj, 0, 1);
+
+		if (reachable[0][1] == false) {
+			cout << "UNREACHABLE" << endl;
+		}
+		else {
+			if (minResult == -1e9) cout << "INFINITY"<< " ";
+			else cout << minResult << " ";
+			
+			if (maxResult == -1e9) cout << "INFINITY" << " "<<endl;
+			else cout << -maxResult << " " << endl;
+		}
+	}
+}
+
+#endif //TIMETRIP  : Reachable 배열 신경쓰기
+
+#if 0
+
+const int MAX_NODE = 500;
+
+int V, edge;
+
+int adj[MAX_NODE][MAX_NODE];
+int delay[MAX_NODE];
+int W[MAX_NODE][MAX_NODE];
+
+void floyd() {
+
+	vector<pair<int, int>> order;
+
+	for (int i = 0; i < V; i++) {
+		order.push_back(make_pair(delay[i], i));
+	}
+	sort(order.begin(), order.end());
+
+	for (int i = 0; i < V; i++) {
+		for (int j = 0; j < V; j++) {
+			if (i == j)
+				W[i][j] = 0;
+			else
+				W[i][j] = adj[i][j];
+		}
+	}
+	for (int k = 0; k < V; k++) {
+		int w = order[k].second;
+		for (int i = 0; i < V; i++) {
+			for (int j = 0; j < V; j++) {
+				adj[i][j] = min(adj[i][j], adj[i][w] + adj[w][j]);
+				W[i][j] = min(W[i][j], adj[i][w] + delay[w] + adj[w][j]);
+			}
+		}
+	}
+}
+int main() {
+
+	int testCase;
+	int a, b, c, s, e;
+
+	scanf("%d %d", &V, &edge);
+
+	for (int i = 0; i < V; i++) {
+		scanf("%d", &delay[i]);
+	}
+	for (int i = 0; i < V; i++) {
+		for (int j = 0; j < V; j++) {
+			adj[i][j] = 1e9;
+		}
+	}
+	for (int i = 0; i < edge; i++) {
+		scanf("%d %d %d", &a, &b, &c);
+		adj[a-1][b-1] = c;
+		adj[b-1][a-1] = c;
+	}
+	floyd();
+
+	scanf("%d", &testCase);
+	while (testCase--) {
+		scanf("%d %d", &s, &e);
+		cout << W[s-1][e-1] << endl;
+	}
+
+	return 0;
+}
+#endif //DRUNKEN 
+//경유 할 노드 하나씩 추가하면서걸리는 가중치를 별도로 저장
+
+#if 0
+
+const int NODE = 200;
+
+int adj[NODE][NODE];
+int V, oldPath, newPath;
+
+void floyd() {
+
+	for (int k = 0; k < V; k++) {
+		for (int i = 0; i < V; i++) {
+			if (adj[i][k] == 1e9) continue;
+			for (int j = 0; j < V; j++) {
+				adj[i][j] = min(adj[i][j], adj[i][k] + adj[k][j]);
+			}
+		}
+	}
+}
+int update(int s, int e, int v) {
+
+	if (adj[s][e] <= v) {
+		return false;
+	}
+	for (int i = 0; i < V; i++) {
+		for (int j = 0; j < V; j++) {
+			adj[i][j] = min(adj[i][j], min(adj[i][s] + v + adj[e][j], adj[i][e] + v + adj[s][j]));
+		}
+	}
+	return true;
+}
+int main() {
+
+	int testCase;
+	int a, b, c;
+	int totalCount;
+
+	scanf("%d", &testCase);
+	while (testCase--) {
+		cin >> V >> oldPath >> newPath;
+		for (int i = 0; i < V; i++) {
+			for (int j = 0; j < V; j++) {
+				if (i == j) 
+					adj[i][j] = 0;
+				else 
+					adj[i][j] = 1e9;
+			}
+		}
+		for (int i = 0; i < oldPath; i++) {
+			cin >> a >> b >> c;
+			if (adj[a][b] >= c) {
+				adj[a][b] = c;
+				adj[b][a] = c;
+			}
+		}
+		floyd();
+		totalCount = 0;
+		for (int i = 0; i < newPath; i++) {
+			cin >> a >> b >> c;
+			if (!update(a, b, c)) 
+				totalCount++;
+		}
+		cout << totalCount << endl;
+	}
+}
+#endif //PROMISES
+//Input으로 들어오는게 동일한 u,v로 여러개의 edge가 들어 올 수 가있음ㅜㅜ
+
+
+#if 1
+
+#endif
